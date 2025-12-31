@@ -7,6 +7,7 @@ use crate::RenderStyle;
 use crate::{bg_color, fg_color};
 use streamdown_ansi::codes::RESET;
 use streamdown_ansi::utils::visible_length;
+use streamdown_parser::inline::format_line;
 
 /// Minimum column width (characters)
 const MIN_COL_WIDTH: usize = 8;
@@ -123,7 +124,9 @@ pub fn render_table_row(
 
     for (i, cell) in cells.iter().enumerate() {
         let col_width = state.column_widths.get(i).copied().unwrap_or(MIN_COL_WIDTH);
-        let wrapped = text_wrap(cell, col_width, 0, "", "", true, true);
+        // Process inline markdown (bold, italic, code, etc.) before wrapping
+        let formatted_cell = format_line(cell, true, true);
+        let wrapped = text_wrap(&formatted_cell, col_width, 0, "", "", true, true);
 
         let cell_lines = if wrapped.is_empty() {
             vec![String::new()]
